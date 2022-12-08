@@ -9,6 +9,7 @@ sudo apt-get update \
 && echo "CHAT_ID           your_CHAT_ID" >> requirements.info \
 && echo "BOT_TOKEN         your_BOT_TOKEN" >> requirements.info \
 && echo "WALLET_ADDRESS    your_WALLET_ADDRESS" >> requirements.info \
+&& echo "CLUSTER           your_CLUSTER" >> requirements.info \
 && echo "" >> requirements.info \
 && touch addresses.txt
 ```

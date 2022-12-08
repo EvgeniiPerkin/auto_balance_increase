@@ -7,15 +7,15 @@ exec 1>>$HOME/auto_balance_increase/out.log 2>&1
 CHAT_ID=''
 BOT_TOKEN=''
 WALLET_ADDRESS=''
+CLUSTER=''
 
 SOLANA_PATH="$HOME/.local/share/solana/install/active_release/bin/solana"
 FILE_WITH_ADDRESSES="$HOME/auto_balance_increase/addresses.txt"
 WALLET_PATH="$HOME/auto_balance_increase/keypair.json"
-REQUIREMENTS=$HOME/auto_balance_increase/requirements.info
+REQUIREMENTS="$HOME/auto_balance_increase/requirements.info"
 
 MIN_BALANCE='0.50'
 TRANSFER_AMOUNT='0.50'
-CLUSTER=t
 
 # logging
 log() {
@@ -42,21 +42,30 @@ get_requirements() {
             WALLET_ADDRESS=$values
             log "Extracting a variable WALLET_ADDRESS $WALLET_ADDRESS"
         fi
+        if [ "$name_column" == "CLUSTER" ]; then
+            CLUSTER=$values
+            log "Extracting a variable CLUSTER $CLUSTER"
+        fi
     done < $REQUIREMENTS
 
     if [ -z "$CHAT_ID" ]; then
         log "Failed to extract variable CHAT_ID from file requirements.info"
-        return 0
+        exit 0
     fi
     
     if [ -z "$BOT_TOKEN" ]; then
         log "Failed to extract variable BOT_TOKEN from file requirements.info"
-        return 0
+        exit 0
     fi
 
     if [ -z "$WALLET_ADDRESS" ]; then
         log "Failed to extract variable WALLET_ADDRESS from file requirements.info"
-        return 0
+        exit 0
+    fi
+    
+    if [ -z "$CLUSTER" ]; then
+        log "Failed to extract variable CLUSTER from file requirements.info"
+        exit 0
     fi
 }
 
@@ -99,7 +108,7 @@ main() {
         if [[ $(echo "${balance_wallet} < ${MIN_BALANCE}" | bc) -eq 1 ]]; then
             log "Script completion (missing sol)."
             send_msg_empty_wallet $balance_wallet
-            return 0
+            exit 0
         fi
 
         local public_key="$line"
