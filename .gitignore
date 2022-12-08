@@ -1,5 +1,4 @@
 /out.log
 /addresses.txt
-/validator-keypair.json
-/telegram.info
-/wallet.info
+/keypair.json
+/requirements.info
