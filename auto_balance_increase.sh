@@ -5,6 +5,7 @@ trap 'exec 2>&4 1>&3' 0 1 2 3
 exec 1>>$HOME/auto_balance_increase/out.log 2>&1
 
 CHAT_ID=''
+CHAT_ALARM=''
 BOT_TOKEN=''
 WALLET_ADDRESS=''
 CLUSTER=''
@@ -14,8 +15,8 @@ FILE_WITH_ADDRESSES="$HOME/auto_balance_increase/addresses.txt"
 WALLET_PATH="$HOME/auto_balance_increase/keypair.json"
 REQUIREMENTS="$HOME/auto_balance_increase/requirements.info"
 
-MIN_BALANCE='0.50'
-TRANSFER_AMOUNT='0.50'
+MIN_BALANCE='0.20'
+TRANSFER_AMOUNT='1.00'
 
 # logging
 log() {
@@ -33,6 +34,10 @@ get_requirements() {
         if [ "$name_column" == "CHAT_ID" ]; then
             CHAT_ID=$values
             log "Extracting a variable CHAT_ID $CHAT_ID"
+        fi
+        if [ "$name_column" == "CHAT_ALARM" ]; then
+            CHAT_ALARM=$values
+            log "Extracting a variable CHAT_ALARM $CHAT_ALARM"
         fi
         if [ "$name_column" == "BOT_TOKEN" ]; then
             BOT_TOKEN=$values
@@ -53,6 +58,11 @@ get_requirements() {
         exit 0
     fi
     
+    if [ -z "$CHAT_ALARM" ]; then
+        log "Failed to extract variable CHAT_ALARM from file requirements.info"
+        exit 0
+    fi
+
     if [ -z "$BOT_TOKEN" ]; then
         log "Failed to extract variable BOT_TOKEN from file requirements.info"
         exit 0
@@ -92,8 +102,9 @@ send_msg_transfer() {
 # sending a message to a telegram bot
 send_msg_empty_wallet() {
     local __balance_wallet=$1
-    local __msg="ATTANTION!!!\nThe balance of the main wallet is $__balance_wallet SOL.\n Top up his balance, otherwise the check will not be performed."
-    curl --header 'Content-Type: application/json' --request 'POST' --data '{"chat_id":"'"$CHAT_ID"'","text":"'"$__msg"'"}' "https://api.telegram.org/bot$BOT_TOKEN/sendMessage" &>/dev/null
+    local _chat_id=$2
+    local __msg="ATTENTION!!!\nThe balance of the main wallet is $__balance_wallet SOL.\n Top up his balance, otherwise the check will not be performed."
+    curl --header 'Content-Type: application/json' --request 'POST' --data '{"chat_id":"'"$_chat_id"'","text":"'"$__msg"'"}' "https://api.telegram.org/bot$BOT_TOKEN/sendMessage" &>/dev/null
 }
 
 # the main function of auto-payments
@@ -107,7 +118,8 @@ main() {
 
         if [[ $(echo "${balance_wallet} < ${MIN_BALANCE}" | bc) -eq 1 ]]; then
             log "Script completion (missing sol)."
-            send_msg_empty_wallet $balance_wallet
+            send_msg_empty_wallet $balance_wallet $CHAT_ID
+            send_msg_empty_wallet $balance_wallet $CHAT_ALARM
             exit 0
         fi
 
