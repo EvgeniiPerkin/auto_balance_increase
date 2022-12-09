@@ -119,7 +119,7 @@ main() {
         if [[ $(echo "${balance} < ${MIN_BALANCE}" | bc) -eq 1 ]]; then
             transfer $public_key
 
-            sleep 1
+            sleep 2
 
             balance=$(get_balance $public_key)
             balance_wallet=$(get_balance $WALLET_ADDRESS)
