@@ -71,7 +71,7 @@ get_requirements() {
 
 # balance request (key address argument)
 get_balance () {
-    local __balance=$(LC_NUMERIC="en_US.UTF-8" printf "%.2f" $($SOLANA_PATH balance $1 -u$CLUSTER | awk '{print $1}'))
+    local __balance=$(printf "%.2f" $($SOLANA_PATH balance $1 -u$CLUSTER | awk '{print $1}'))
     echo $__balance
 }
 
